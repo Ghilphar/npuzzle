@@ -8,7 +8,6 @@
 :- use_module(source/goal).
 :- use_module(source/checker).
 :- use_module(source/solver).
-:- use_module(source/file_utils).
 
 % Library for debugging
 
@@ -23,6 +22,7 @@
 % Wrapper permettant de voir les erreurs, notament les endroits ou ca plante.
 main_:- catch_with_backtrace(main, Err, error_management(Err) ).
 
+error_management(file_missing):- writeln('The file does not exist.').
 error_management(invalid_file):- writeln('Invalid file').
 error_management(Err):- print_message(error, Err).
 
@@ -42,17 +42,18 @@ error_management(Err):- print_message(error, Err).
 
 % Main Predicate with File and Heuristic Argument
 % Here main predicate take a list of two elements File and HeuristicArg.
-main([File,HeuristicArg]):-
+main([File,HeuristicArg]):- !,
 	% We convert the string HeuristicArg to a term called Heuristic
-	check_file_exists(File), !,
+	% check_file_exists(File), !,
 	term_string(Heuristic, HeuristicArg),
 
 	% TODO We should check if the Heuristic is a valid one. If not we should exit writing the heuristic availables.
 	% Also we should check if File exist else we should exit and say the file doesn't exist
 	
 	% We read the file File into a list of Ascii Codes
-	read_file_to_codes(File, Codes, []),
-	writeln(Codes),
+	%catch(read_file_to_codes(File, Codes, []), _, throw(file_missing)) -> true,
+	( catch(read_file_to_codes(File, Codes, []), _, throw(file_missing)) -> true),
+	%( read_file_to_codes(File, Codes, []) -> true ; throw(file_missing) ),
 
 	% Here we parse theses Codes to get the puzzle Size and the initial State Puzzle
 	% phrase come with the standard lib for DCGs We parse the codes we find on the read_file_to_codes
