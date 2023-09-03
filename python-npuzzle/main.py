@@ -86,7 +86,7 @@ def parse_puzzle(path_to_puzzle):
     return size, puzzle_matrix
 
 def parse_inputs():
-    algorithms = ["astar"]
+    algorithms = ["astar", "greedy", "uniform"]
     heuristics = ["manhattan", "euclidean", "linear_conflict"]
 
     if len(sys.argv) != 4:
@@ -103,6 +103,7 @@ def parse_inputs():
         sys.exit(1)
     if algorithm not in algorithms:
         print("error: invalid algorithm")
+        print(f"Availables algorithms are: {algorithms}")
         print_usage()
         sys.exit(1)
     if heuristic not in heuristics:

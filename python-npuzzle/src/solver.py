@@ -97,7 +97,7 @@ def euclidean_distance(puzzle, goal):
 # So we will use a dictionary to keep track of the f(n) values of puzzles in the open set.
 # 2 data structures: a priority queue and a dictionary
 
-def a_star_algorithm(puzzle, goal, heuristic_func):
+def a_star_algorithm(puzzle, goal, heuristic_func, search_type):
     total_states_analyzed = 0
     max_states_in_memory = 0
 
@@ -106,8 +106,15 @@ def a_star_algorithm(puzzle, goal, heuristic_func):
     # Convert the goal to a string
     goal_puzzle_str = str(goal.tolist())
     
-    # Implement the A* algorithm using Manhattan distance as the heuristic
-    start = (heuristic_func(puzzle, goal), start_puzzle_str, 0, None) # (f(n), puzzle, g(n), parent)
+    # Implement the A* algorithm using the heuristic
+    
+    # Calculate f for the first node
+    if search_type == 'astar' or search_type == 'greedy':
+        start_f = heuristic_func(puzzle, goal)
+    else:
+        start_f = 0
+
+    start = (start_f, start_puzzle_str, 0, None) # (f(n), puzzle, g(n), parent)
     # Initialize the open set with the start node, priority queue
     open_set = [start]
     # Heapify the open set
@@ -177,11 +184,18 @@ def a_star_algorithm(puzzle, goal, heuristic_func):
                 continue
 
             # Calculate f(n) for neighbor
-            neighbor_g = current_g + 1
-            neighbor_h = heuristic_func(neighbor, goal)
+            if search_type == 'astar':
+                neighbor_g = current_g + 1
+                neighbor_h = heuristic_func(neighbor, goal)
+            elif search_type == "greedy":
+                neighbor_g = 0
+                neighbor_h = heuristic_func(neighbor, goal)
+            elif search_type == "uniform":
+                neighbor_g = current_g + 1
+                neighbor_h = 0
+            
             neighbor_f = neighbor_g + neighbor_h
 
-            ##neighbor_puzzle_str = np.array2string(neighbor)
             existing_fn = open_set_fn_values.get(neighbor_puzzle_str, float('inf'))
             if neighbor_f < existing_fn:
                 #Update the f(n) value in the dictionary
@@ -195,23 +209,20 @@ def a_star_algorithm(puzzle, goal, heuristic_func):
     return None
 
 algorithm_map['astar'] = a_star_algorithm
+
 heuristic_map['manhattan'] = manhattan_distance
 heuristic_map['euclidean'] = euclidean_distance
 heuristic_map['linear_conflict'] = linear_conflict
 
 
 
-def solve(puzzle, goal, algorithm, heuristic):
+def solve(puzzle, goal, search_type, heuristic):
     # Solve the puzzle using the A* algorithm
-    algo_func = algorithm_map.get(algorithm)
     heuristic_func = heuristic_map.get(heuristic)
 
-    if algo_func is None:
-        print("error: invalid algorithm")
-        sys.exit(1)
 
     if heuristic_func is None:
         print("error: invalid heuristic")
         sys.exit(1)
 
-    solution = algo_func(puzzle, goal, heuristic_func)
+    solution = a_star_algorithm(puzzle, goal, heuristic_func, search_type)
