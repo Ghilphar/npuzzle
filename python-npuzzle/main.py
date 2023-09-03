@@ -87,7 +87,7 @@ def parse_puzzle(path_to_puzzle):
 
 def parse_inputs():
     algorithms = ["astar"]
-    heuristics = ["manhattan"]
+    heuristics = ["manhattan", "euclidean", "linear_conflict"]
 
     if len(sys.argv) != 4:
         print_usage()

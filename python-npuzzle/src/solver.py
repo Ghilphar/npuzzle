@@ -33,6 +33,8 @@ def generate_neighbors(puzzle, empty_row, empty_col):
 
     return neighbors
 
+# Manhattan distance
+# The Manhattan distance is the sum of the absolute differences between the current position and the goal position
 def manhattan_distance(puzzle, goal):
     # Calculate the Manhattan distance
     distance = 0
@@ -42,6 +44,53 @@ def manhattan_distance(puzzle, goal):
                 continue
             target_i, target_j = np.where(goal == puzzle[i, j])
             distance += abs(i - int(target_i)) + abs(j - int(target_j))
+    return distance
+
+# Linear Conflict
+# Two tiles T1 and T2 are in linear conflict if they are in same row or column.
+# And need to swap in order to go to the correct place.
+def linear_conflict(puzzle, goal):
+    distance = 0
+    linear_conflict_count = 0
+
+    for i in range(puzzle.shape[0]):
+        for j in range(puzzle.shape[1]):
+            if puzzle[i][j] == 0:
+                continue
+            target_i, target_j = np.where(goal == puzzle[i, j])
+            distance += abs(i - int(target_i)) + abs(j - int(target_j))
+
+            # Check for linear conflict in row
+            # K index in the row
+            for k in range(j + 1, puzzle.shape[1]):
+                if puzzle[i][k] == 0:
+                    continue
+                target_k_i, target_k_j = np.where(goal == puzzle[i, k])
+                if target_i == target_k_i and target_j > target_k_j:
+                    linear_conflict_count += 1
+
+            # Check for linear conflict in column
+            # for l in range(i + 1, puzzle.shape[0]):
+            #     if puzzle[l][j] == 0:
+            #         continue
+            #     target_l_i, target_l_j = np.where(goal == puzzle[l][j])
+            #     if target_j == target_l_j and target_i > target_l_i:
+            #         linear_conflict_count += 1
+
+    return distance + 2 * linear_conflict_count
+
+
+# Euclidean distance
+# The Euclidean distance is the square root of the sum of the squared differences between the current position and the goal position
+def euclidean_distance(puzzle, goal):
+    # Calculate the Euclidean distance
+    distance = 0
+    for i in range(puzzle.shape[0]):
+        for j in range(puzzle.shape[1]):
+            if puzzle[i][j] == 0:
+                continue
+            target_i, target_j = np.where(goal == puzzle[i, j])
+            distance += np.sqrt((i - int(target_i))**2 + (j - int(target_j))**2)
     return distance
 
 # The python heapq module does not provide a direct way to update the priority of an item in the heap.
@@ -147,6 +196,9 @@ def a_star_algorithm(puzzle, goal, heuristic_func):
 
 algorithm_map['astar'] = a_star_algorithm
 heuristic_map['manhattan'] = manhattan_distance
+heuristic_map['euclidean'] = euclidean_distance
+heuristic_map['linear_conflict'] = linear_conflict
+
 
 
 def solve(puzzle, goal, algorithm, heuristic):
