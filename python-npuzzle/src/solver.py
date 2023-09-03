@@ -50,32 +50,30 @@ def manhattan_distance(puzzle, goal):
 # Two tiles T1 and T2 are in linear conflict if they are in same row or column.
 # And need to swap in order to go to the correct place.
 def linear_conflict(puzzle, goal):
-    distance = 0
+    distance = manhattan_distance(puzzle, goal)
     linear_conflict_count = 0
 
     for i in range(puzzle.shape[0]):
         for j in range(puzzle.shape[1]):
-            if puzzle[i][j] == 0:
+            if puzzle[i, j] == 0:
                 continue
             target_i, target_j = np.where(goal == puzzle[i, j])
-            distance += abs(i - int(target_i)) + abs(j - int(target_j))
 
-            # Check for linear conflict in row
-            # K index in the row
-            for k in range(j + 1, puzzle.shape[1]):
-                if puzzle[i][k] == 0:
-                    continue
-                target_k_i, target_k_j = np.where(goal == puzzle[i, k])
-                if target_i == target_k_i and target_j > target_k_j:
-                    linear_conflict_count += 1
+            if target_i == i:
+                for k in range(j + 1, puzzle.shape[0]):
+                    if puzzle[i, k] == 0:
+                        continue
+                    target_k_i, target_k_j = np.where(goal == puzzle[i, k])
+                    if target_i == target_k_i and target_j > target_k_j:
+                        linear_conflict_count += 1
 
-            # Check for linear conflict in column
-            # for l in range(i + 1, puzzle.shape[0]):
-            #     if puzzle[l][j] == 0:
-            #         continue
-            #     target_l_i, target_l_j = np.where(goal == puzzle[l][j])
-            #     if target_j == target_l_j and target_i > target_l_i:
-            #         linear_conflict_count += 1
+            if target_j == j:
+                for k in range(i + 1, puzzle.shape[1]):
+                    if puzzle[k, j] == 0:
+                        continue
+                    target_k_i, target_k_j = np.where(goal == puzzle[k, j])
+                    if target_j == target_k_j and target_i > target_k_i:
+                        linear_conflict_count += 1
 
     return distance + 2 * linear_conflict_count
 
@@ -195,6 +193,8 @@ def a_star_algorithm(puzzle, goal, heuristic_func, search_type):
                 neighbor_h = 0
             
             neighbor_f = neighbor_g + neighbor_h
+            if (search_type == "astart" and neighbor_f < current_f):
+                print( "Non admissible" )
 
             existing_fn = open_set_fn_values.get(neighbor_puzzle_str, float('inf'))
             if neighbor_f < existing_fn:
